@@ -3,6 +3,8 @@ import tkinter as tk
 from tkinter import ttk
 import ttkbootstrap as tb
 import math
+from tkinter import messagebox
+import customtkinter as ctk
 
 # Funciones matemáticas
 
@@ -60,6 +62,33 @@ def calcular_mcd_valores(a, b):
     salida_texto += f"\n\nM.C.D.({a}, {b}) = {x}"
     return salida_texto
 
+# Conjuntospor aqui
+def obtener_conjuntos(entry_A, entry_B):
+    try:
+        A = [x.strip() for x in entry_A.get().split(",") if x.strip()]
+        B = [x.strip() for x in entry_B.get().split(",") if x.strip()]
+        if not A or not B:
+            raise ValueError
+        return A, B
+    except:
+        messagebox.showerror("Error", "Ingrese ambos conjuntos correctamente separados por comas")
+        return None, None
+
+def union(entry_A, entry_B, resultado):
+    A, B = obtener_conjuntos(entry_A, entry_B)
+    if A is not None:
+        resultado.set(f"Resultado: {{ {', '.join(sorted(set(A + B)))} }}")
+
+def interseccion(entry_A, entry_B, resultado):
+    A, B = obtener_conjuntos(entry_A, entry_B)
+    if A is not None:
+        resultado.set(f"Resultado: {{ {', '.join([x for x in A if x in B])} }}")
+
+def diferencia(entry_A, entry_B, resultado):
+    A, B = obtener_conjuntos(entry_A, entry_B)
+    if A is not None:
+        resultado.set(f"Resultado: {{ {', '.join([x for x in A if x not in B])} }}")
+
 # Interfaz
 def abrir_matematicas(parent=None):
     is_root = parent is None
@@ -76,7 +105,7 @@ def abrir_matematicas(parent=None):
     notebook = tb.Notebook(app)
     notebook.pack(expand=True, fill="both", padx=12, pady=8)
 
-    # Permutaciones / Combinaciones
+# Permutaciones / Combinaciones
     tab_perm = ttk.Frame(notebook)
     notebook.add(tab_perm, text="Permutaciones / Combinaciones")
 
@@ -110,7 +139,7 @@ def abrir_matematicas(parent=None):
                   int(entry_n.get()), int(entry_r.get()), combo_perm_comb.get()
               ))).pack(pady=8)
 
-    # M.C.D. (Euclides)
+# M.C.D. (Euclides)
     tab_mcd = ttk.Frame(notebook)
     notebook.add(tab_mcd, text="M.C.D. (Euclides)")
 
@@ -132,19 +161,45 @@ def abrir_matematicas(parent=None):
     tb.Button(tab_mcd, text="Calcular M.C.D.", bootstyle="success",
               command=lambda: salida_mcd.set(calcular_mcd_valores(int(entry_a.get()), int(entry_b.get())))).pack(pady=8)
 
-    # botones borrar y sus funciones
-    def limpiar_perm():
+# Conjuntos
+    tab_conj = ttk.Frame(notebook)
+    notebook.add(tab_conj, text="Conjuntos")
+
+    tb.Label(tab_conj, text="Operaciones con Conjuntos", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=3, pady=10)
+
+    tb.Label(tab_conj, text="Conjunto A:").grid(row=1, column=0, padx=10, pady=5)
+    entry_A = tb.Entry(tab_conj, width=30)
+    entry_A.grid(row=1, column=1, padx=10, pady=5)
+
+    tb.Label(tab_conj, text="Conjunto B:").grid(row=2, column=0, padx=10, pady=5)
+    entry_B = tb.Entry(tab_conj, width=30)
+    entry_B.grid(row=2, column=1, padx=10, pady=5)
+
+    resultado_conj = tk.StringVar()
+    resultado_conj.set("Resultado aparecerá aquí")
+
+    tb.Button(tab_conj, text="Unión (∪)", bootstyle="success",
+              command=lambda: union(entry_A, entry_B, resultado_conj)).grid(row=3, column=0, padx=10, pady=10)
+    tb.Button(tab_conj, text="Intersección (∩)", bootstyle="info",
+              command=lambda: interseccion(entry_A, entry_B, resultado_conj)).grid(row=3, column=1, padx=10, pady=10)
+    tb.Button(tab_conj, text="Diferencia (−)", bootstyle="warning",
+              command=lambda: diferencia(entry_A, entry_B, resultado_conj)).grid(row=3, column=2, padx=10, pady=10)
+
+    tb.Label(tab_conj, textvariable=resultado_conj, font=("Arial", 12), bootstyle="info").grid(row=4, column=0, columnspan=3, pady=20)
+
+# botones borrar y sus funciones
+    def limpiar_todo():
         entry_n.delete(0, tk.END)
         entry_r.delete(0, tk.END)
-        salida_perm.set("")
-
-    def limpiar_mcd():
         entry_a.delete(0, tk.END)
         entry_b.delete(0, tk.END)
+        entry_A.delete(0, tk.END)
+        entry_B.delete(0, tk.END)
+        salida_perm.set("")
         salida_mcd.set("")
+        resultado_conj.set("Resultado aparecerá aquí")
 
-    tb.Button(app, text="Limpiar Todo", bootstyle="danger",
-              command=lambda: (limpiar_perm(), limpiar_mcd())).pack(pady=6)
-    
+    tb.Button(app, text="Limpiar Todo", bootstyle="danger", command=limpiar_todo).pack(pady=6)
+
     if is_root:
         app.mainloop()
