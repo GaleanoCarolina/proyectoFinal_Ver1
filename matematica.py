@@ -4,7 +4,6 @@ from tkinter import ttk
 import ttkbootstrap as tb
 import math
 from tkinter import messagebox
-import customtkinter as ctk
 
 # Funciones matemáticas
 
